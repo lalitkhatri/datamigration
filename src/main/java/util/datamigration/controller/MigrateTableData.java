@@ -39,6 +39,7 @@ public class MigrateTableData {
 	private void init(String tableName) {
 		if(jdbcTemplate==null) {
 			jdbcTemplate = new JdbcTemplate(sourceDS);
+			jdbcTemplate.setFetchSize(500);
 		}
 		
 		if(simpleJdbcInsertMap.get(tableName)==null) {
