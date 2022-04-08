@@ -6,9 +6,10 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
-public class CopyRow implements org.springframework.jdbc.core.RowMapper<Map<String,Object>> {
+public class CopyRow implements RowMapper<Map<String,Object>> {
     
 	SimpleJdbcInsert simpleJdbcInsert;
 	
