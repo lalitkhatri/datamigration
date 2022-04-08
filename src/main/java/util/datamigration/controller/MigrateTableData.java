@@ -48,7 +48,7 @@ public class MigrateTableData {
 	}
 	
 	private void copyAllData(String tableName) {
-        jdbcTemplate.query("SELECT * FROM "+tableName, new CopyRow(simpleJdbcInsertMap.get(tableName)));
+        jdbcTemplate.queryForStream("SELECT * FROM "+tableName, new CopyRow(simpleJdbcInsertMap.get(tableName)));
     }
 	
 	
