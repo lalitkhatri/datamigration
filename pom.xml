@@ -20,7 +20,13 @@
 		<dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
+            <exclusions>
+            	<exclusion>
+            		<groupId>org.springframework.boot</groupId>
+            		<artifactId>spring-boot-starter-logging</artifactId>
+            	</exclusion>
+            </exclusions>
+		</dependency>
         
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -32,7 +38,13 @@
 			<artifactId>mssql-jdbc</artifactId>
 			<scope>runtime</scope>
 		</dependency>
-
+		
+		<dependency>
+			<groupId>org.apache.phoenix</groupId>
+			<artifactId>phoenix-client</artifactId>
+			<version>4.15.0-HBase-1.5</version>
+		</dependency>
+		
 		<!-- <dependency>
 			<groupId>jdbc.sybase</groupId>
 			<artifactId>jconnect</artifactId>

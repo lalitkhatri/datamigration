@@ -5,6 +5,8 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,7 +19,7 @@ import util.datamigration.model.CopyRow;
 
 @RestController
 public class MigrateTableData {
-	
+	Logger  logger = LoggerFactory.getLogger(MigrateTableData.class);
 	@Autowired
 	@Qualifier("source")
 	private DataSource sourceDS;
@@ -32,6 +34,7 @@ public class MigrateTableData {
 	
 	@GetMapping("/{tableName}")
 	public void migrateData(@PathVariable("tableName") String tableName) throws Exception {
+		logger.info("--------------- Initiate migration for ------------ " +tableName);
 		init(tableName);
 		copyAllData(tableName);
 	}
@@ -49,6 +52,7 @@ public class MigrateTableData {
 	
 	private void copyAllData(String tableName) {
         jdbcTemplate.queryForStream("SELECT * FROM "+tableName, new CopyRow(simpleJdbcInsertMap.get(tableName)));
+//        jdbcTemplate.query("SELECT * FROM "+tableName,new CopyRow(simpleJdbcInsertMap.get(tableName)));
     }
 	
 	

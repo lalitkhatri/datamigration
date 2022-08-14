@@ -6,11 +6,14 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
 public class CopyRow implements RowMapper<Map<String,Object>> {
-    
+	Logger  logger = LoggerFactory.getLogger(CopyRow.class);
+
 	SimpleJdbcInsert simpleJdbcInsert;
 	
 	public CopyRow(SimpleJdbcInsert simpleJdbcInsert) {
@@ -19,6 +22,7 @@ public class CopyRow implements RowMapper<Map<String,Object>> {
 	
 	@Override
 	public Map<String,Object> mapRow(ResultSet rs, int rowNum) throws SQLException {
+		logger.info("Parsing row number ---- "+ rowNum);
 		ResultSetMetaData meta = rs.getMetaData();
 		int colCount = meta.getColumnCount();
 		Map<String,Object> row = new HashMap<>();
@@ -26,6 +30,7 @@ public class CopyRow implements RowMapper<Map<String,Object>> {
 			row.put(meta.getColumnName(i), rs.getObject(i));
 		}	
 		simpleJdbcInsert.execute(row);
+		logger.info(row.toString());
 		return null;
 	}
 }
