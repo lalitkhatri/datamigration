@@ -15,14 +15,14 @@ public class DataSourceConfiguration {
 	@Bean(name = "source")
 	@Primary
 	@ConfigurationProperties(prefix="source.datasource")
-	public DataSource aseDataSource() {
+	public DataSource sourceDataSource() {
 	    return DataSourceBuilder.create().build();
 	}
-
-	@Bean(name = "destination")
-	@ConfigurationProperties(prefix="destination.datasource")
-	public DataSource sqlserverDataSource() {
-	    return DataSourceBuilder.create().build();
-	}
+//
+//	@Bean(name = "destination")
+//	@ConfigurationProperties(prefix="destination.datasource")
+//	public DataSource sqlserverDataSource() {
+//	    return DataSourceBuilder.create().build();
+//	}
 	
 }
