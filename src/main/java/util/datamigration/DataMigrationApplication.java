@@ -1,13 +1,19 @@
 package util.datamigration;
 
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class DataMigrationApplication {
+public class DataMigrationApplication implements CommandLineRunner{
 
 	public static void main(String[] args) {
 		SpringApplication.run(DataMigrationApplication.class, args);
+	}
+
+	@Override
+	public void run(String... args) throws Exception {
+		Thread.currentThread().join();		
 	}
 
 }

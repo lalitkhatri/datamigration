@@ -12,10 +12,17 @@ public class TableToCSVZip extends RouteBuilder {
 
 	@Value("${filePath}")
 	private String filePath;
+	
+	@Value("${tableName}")
+	private String tableName;
+	
+	@Value("${schema}")
+	private String schema;
+	
 
 	@Override
 	public void configure() throws Exception {
-		from("sql:SELECT * FROM GLOBALDATA.EXCHANGE WHERE TRACK='Y'?outputType="+outputType+"&repeatCount=1")
+		from("sql:SELECT * FROM "+schema+"."+tableName+"?outputType="+outputType+"&repeatCount=1")
 		.split(body()).streaming()
 			.log("${body}")
 		.end()
