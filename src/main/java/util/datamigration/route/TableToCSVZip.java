@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class TableToCSVZip extends RouteBuilder {
 	
-	@Value("${outPutType}")
+	@Value("${outputType}")
 	private String outputType;
 
 	@Value("${filePath}")
