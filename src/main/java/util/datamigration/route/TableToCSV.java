@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Profile("export")
-public class TableToCSVZip extends RouteBuilder {
+public class TableToCSV extends RouteBuilder {
 	
 	@Value("${filePath}")
 	private String filePath;
