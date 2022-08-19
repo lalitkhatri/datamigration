@@ -4,14 +4,13 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
+@Profile("export")
 public class TableToCSVZip extends RouteBuilder {
 	
-	@Value("${outputType}")
-	private String outputType;
-
 	@Value("${filePath}")
 	private String filePath;
 	
@@ -30,7 +29,7 @@ public class TableToCSVZip extends RouteBuilder {
 	
 	@Override
 	public void configure() throws Exception {
-		from("sql:SELECT * FROM "+schema+"."+tableName+"?outputType="+outputType+"&repeatCount=1")
+		from("sql:SELECT * FROM "+schema+"."+tableName+"?outputType=StreamList&repeatCount=1")
 		.split(body()).streaming()
 			.marshal().csv()
 			.process(new Processor() {
@@ -43,7 +42,6 @@ public class TableToCSVZip extends RouteBuilder {
 					}
 				
 				})
-//			.log("${header.CamelFilePath}${header.CamelFileName}")
 			.toD("file:${header.CamelFilePath}?fileExist=Append")
 		.end();
 		
