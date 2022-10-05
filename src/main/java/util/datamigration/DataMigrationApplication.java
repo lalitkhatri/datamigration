@@ -1,8 +1,8 @@
 package util.datamigration;
 
 import java.io.File;
+import java.time.Instant;
 
-import org.apache.hadoop.util.Time;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
@@ -13,7 +13,6 @@ public class DataMigrationApplication {
 	public static void main(String[] args) {
 		SparkSession spark = SparkSession.builder().appName("Data Migration")
 				.config("spark.master", "local")
-//				.config("spark.executor.instances",2)
 //		      .config("spark.some.config.option", "some-value")
 				.getOrCreate();
 
@@ -23,7 +22,8 @@ public class DataMigrationApplication {
 	    for (int i = 0; i < files.length; i++){
 	        if (files[i].isFile() && files[i].getName().endsWith("csv")){ //this line weeds out other directories/folders
 	        	readCSV(spark,files[i].getAbsolutePath());
-	        	System.out.println("Completed for File - "+files[i].getName()+ " - " + Time.now());
+	        	System.out.println("Completed for File - "+files[i].getName()+ " - " + Instant.now());
+	        	files[i].delete();
 	        }
 	    }
 	    System.out.println("Processed All files !!");
@@ -37,8 +37,8 @@ public class DataMigrationApplication {
 				.option("inferSchema", "true")
 				.option("header", "true")
 				.load(file);
-		System.out.println("Data count - "+records.count());
-		records.printSchema();
+//		System.out.println("Data count - "+records.count());
+//		records.printSchema();
 		
 		records.write().mode(SaveMode.Append).partitionBy("EXCHANGE","SYMBOL").parquet("D:\\eodhistdata\\parquet\\eqdata.parquet");
 		
