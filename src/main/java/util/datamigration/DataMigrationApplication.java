@@ -3,6 +3,7 @@ package util.datamigration;
 import java.io.File;
 import java.time.Instant;
 
+import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
@@ -16,7 +17,7 @@ public class DataMigrationApplication {
 			+ "EMA50 double,EMA100 double,EMA200 double,STOCH_K double,STOCH_D double,DC_HIGH double,DC_LOW double";
 	public static void main(String[] args) {
 		SparkSession spark = SparkSession.builder().appName("Data Migration")
-				.config("spark.master", "local[*]")
+				.config("spark.master", "local[3]")
 //		      .config("spark.some.config.option", "some-value")
 				.getOrCreate();
 
@@ -31,6 +32,8 @@ public class DataMigrationApplication {
 	        }
 	    }
 	    System.out.println("Processed All files !!");
+		
+//		compact(spark);
 	    spark.stop();
 		
 	}
@@ -44,9 +47,15 @@ public class DataMigrationApplication {
 				.load(file);
 //		System.out.println("Data count - "+records.count());
 //		records.printSchema();
-		records.na().fill(0.0, new String[] {"PREVCLOSE","ADJCLOSEPX","TOTTRDVAL"})
+		records.na().fill(0.0, new String[] {"PREVCLOSE","ADJCLOSEPX","TOTTRDVAL"}).coalesce(1)
 			.write().mode(SaveMode.Append).partitionBy("EXCHANGE","SYMBOL").parquet("D:\\eodhistdata\\parquet\\eqdata.parquet");
 		
+		
+	}
+	
+	private static void compact(SparkSession spark) {
+		spark.read().schema(schema).parquet("D:\\eodhistdata\\parquet\\eqdata.parquet").repartition(1,new Column("EXCHANGE"),new Column("SYMBOL"))
+		.write().mode(SaveMode.Append).partitionBy("EXCHANGE","SYMBOL").parquet("C:\\parquet\\eqdata");
 		
 	}
 
