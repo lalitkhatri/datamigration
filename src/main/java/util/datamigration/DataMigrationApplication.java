@@ -35,13 +35,18 @@ public class DataMigrationApplication {
 	        if (files[i].isFile() && files[i].getName().endsWith("csv")){ //this line weeds out other directories/folders
 	        	readCSV(spark,files[i].getAbsolutePath());
 	        	System.out.println("Completed for File - "+files[i].getName()+ " - " + Instant.now());
+//	        	files[i].delete();
+	        }
+	    }
+	    existing.na().fill(0.0, new String[] {"PREVCLOSE","ADJCLOSEPX","TOTTRDVAL"}).orderBy("EXCHANGE","SYMBOL","TRADEDATE","FREQ")
+	    	.write().mode(SaveMode.Append).partitionBy("EXCHANGE").parquet(finalDirecotry);
+	    System.out.println("Processed All files !!"+ Instant.now());
+	    for (int i = 0; i < files.length; i++){
+	        if (files[i].isFile() && files[i].getName().endsWith("csv")){ 
 	        	files[i].delete();
 	        }
 	    }
-	    
-	    System.out.println("Processed All files !!"+ Instant.now());
-		
-		compact(spark);
+//		compact(spark);
 //		long cnt2 = spark.read().schema(schema).parquet(finalDirecotry).count();
 //		System.out.println("Compressed count - "+ cnt2);
 		try {
@@ -63,8 +68,13 @@ public class DataMigrationApplication {
 				.load(file);
 //		System.out.println("Data count - "+records.count());
 //		records.printSchema();
-		records.na().fill(0.0, new String[] {"PREVCLOSE","ADJCLOSEPX","TOTTRDVAL"}).orderBy("EXCHANGE","SYMBOL","TRADEDATE","FREQ")
-			.write().mode(SaveMode.Append).partitionBy("EXCHANGE").parquet(stagingDirectory);
+		if(existing  !=null ) {
+			existing = existing.union(records);
+		}
+		else {
+			existing = records;
+		}
+			
 	}
 	
 	private static void compact(SparkSession spark) {
