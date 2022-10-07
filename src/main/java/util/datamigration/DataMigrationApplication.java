@@ -1,8 +1,10 @@
 package util.datamigration;
 
 import java.io.File;
+import java.io.IOException;
 import java.time.Instant;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -11,6 +13,11 @@ import org.apache.spark.sql.SparkSession;
 
 public class DataMigrationApplication {
 
+	private static String sourceDirectory = "D:\\eodhistdata\\csv\\ready";
+	private static String stagingDirectory = "C:\\temp\\eqdata.stage";
+	private static String finalDirecotry = "C:\\temp\\eqdata.final";
+	
+	private static Dataset<Row> existing = null;
 	private static String schema = "EXCHANGE string,SYMBOL string,TRADEDATE string,FREQ string,"
 			+ "OPENPX double,HIGH double,LOW double,CLOSEPX double,PREVCLOSE double,ADJCLOSEPX double,TOTTRDQTY long,TOTTRDVAL double,"
 			+ "TRUERANGE double,ATR double,SMA5 double,SMA20 double,SMA50 double,SMA100 double,SMA200 double,EMA5 double,EMA20 double,"
@@ -18,11 +25,11 @@ public class DataMigrationApplication {
 	public static void main(String[] args) {
 		SparkSession spark = SparkSession.builder().appName("Data Migration")
 				.config("spark.master", "local[3]")
+				.config("spark.sql.sources.partitionOverwriteMode","dynamic")
 //		      .config("spark.some.config.option", "some-value")
 				.getOrCreate();
-
-		File path = new File("D:\\eodhistdata\\csv");
-
+		File path = new File(sourceDirectory);
+		
 	    File [] files = path.listFiles();
 	    for (int i = 0; i < files.length; i++){
 	        if (files[i].isFile() && files[i].getName().endsWith("csv")){ //this line weeds out other directories/folders
@@ -31,9 +38,18 @@ public class DataMigrationApplication {
 	        	files[i].delete();
 	        }
 	    }
-	    System.out.println("Processed All files !!");
+	    
+	    System.out.println("Processed All files !!"+ Instant.now());
 		
-//		compact(spark);
+		compact(spark);
+//		long cnt2 = spark.read().schema(schema).parquet(finalDirecotry).count();
+//		System.out.println("Compressed count - "+ cnt2);
+		try {
+			FileUtils.deleteDirectory(new File(stagingDirectory));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		System.out.println("Compression Complete !!"+ Instant.now());
 	    spark.stop();
 		
 	}
@@ -47,15 +63,13 @@ public class DataMigrationApplication {
 				.load(file);
 //		System.out.println("Data count - "+records.count());
 //		records.printSchema();
-		records.na().fill(0.0, new String[] {"PREVCLOSE","ADJCLOSEPX","TOTTRDVAL"}).coalesce(1)
-			.write().mode(SaveMode.Append).partitionBy("EXCHANGE","SYMBOL").parquet("D:\\eodhistdata\\parquet\\eqdata.parquet");
-		
-		
+		records.na().fill(0.0, new String[] {"PREVCLOSE","ADJCLOSEPX","TOTTRDVAL"}).orderBy("EXCHANGE","SYMBOL","TRADEDATE","FREQ")
+			.write().mode(SaveMode.Append).partitionBy("EXCHANGE").parquet(stagingDirectory);
 	}
 	
 	private static void compact(SparkSession spark) {
-		spark.read().schema(schema).parquet("D:\\eodhistdata\\parquet\\eqdata.parquet").repartition(1,new Column("EXCHANGE"),new Column("SYMBOL"))
-		.write().mode(SaveMode.Append).partitionBy("EXCHANGE","SYMBOL").parquet("C:\\parquet\\eqdata");
+		spark.read().schema(schema).parquet(stagingDirectory).repartition(new Column("EXCHANGE")).orderBy("EXCHANGE","SYMBOL","TRADEDATE","FREQ")
+		.write().mode(SaveMode.Append).partitionBy("EXCHANGE").parquet(finalDirecotry);
 		
 	}
 
