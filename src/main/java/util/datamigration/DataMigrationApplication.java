@@ -26,6 +26,8 @@ public class DataMigrationApplication {
 		SparkSession spark = SparkSession.builder().appName("Data Migration")
 				.config("spark.master", "local[3]")
 				.config("spark.sql.sources.partitionOverwriteMode","dynamic")
+//				.config("spark.memory.storageFraction","0.3")
+//				.config("spark.memory.fraction","0.8")
 //		      .config("spark.some.config.option", "some-value")
 				.getOrCreate();
 		File path = new File(sourceDirectory);
