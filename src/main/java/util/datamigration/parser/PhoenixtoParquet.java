@@ -31,7 +31,7 @@ public class PhoenixtoParquet implements IParser {
 			      .option("user", "none")
 			      .option("password", "none")
 			      .load();
-//		exchange.write().mode(SaveMode.Overwrite).parquet("/home/ubuntu/Downloads/eodhistdata/exchange");
+		exchange.write().mode(SaveMode.Overwrite).parquet("/home/ubuntu/Downloads/eodhistdata/exchange");
 		
 		Dataset<Row> ticker = spark.read()
 			      .format("jdbc")
@@ -41,7 +41,7 @@ public class PhoenixtoParquet implements IParser {
 			      .option("user", "none")
 			      .option("password", "none")
 			      .load();
-//		ticker.write().mode(SaveMode.Overwrite).parquet("/home/ubuntu/Downloads/eodhistdata/ticker");
+		ticker.write().mode(SaveMode.Overwrite).parquet("/home/ubuntu/Downloads/eodhistdata/ticker");
 		
 		Dataset<Row> splits = spark.read()
 			      .format("jdbc")
@@ -51,7 +51,7 @@ public class PhoenixtoParquet implements IParser {
 			      .option("user", "none")
 			      .option("password", "none")
 			      .load();
-//		splits.write().mode(SaveMode.Overwrite).parquet("/home/ubuntu/Downloads/eodhistdata/splits");
+		splits.write().mode(SaveMode.Overwrite).parquet("/home/ubuntu/Downloads/eodhistdata/splits");
 		
 		// Load data from TABLE1
 		
@@ -66,11 +66,21 @@ public class PhoenixtoParquet implements IParser {
 		
 		eqdata.createOrReplaceTempView("EQDATA");
 		
-		Dataset<Row> tradeData = spark.sql("select * from EQDATA where EXCHANGE='BSE' ");
+		
+		Dataset<Row> tradeData = spark.sql("select * from EQDATA where EXCHANGE in ('VX') ");
 		
 		tradeData.orderBy("EXCHANGE", "SYMBOL","TRADEDATE","FREQ").write().partitionBy("EXCHANGE").mode(SaveMode.Append).parquet("/home/ubuntu/Downloads/eodhistdata/eqdata");
-//		System.out.println("VI data count - "+tradeData.count());
+		System.out.println("VI data count - "+tradeData.count());
 		
+		Dataset<Row> parquetData = spark.read().parquet("/home/ubuntu/Downloads/eodhistdata/eqdata");
+		
+		parquetData.printSchema();
+		System.out.println("Loaded data count - "+ parquetData.count());
+		
+		try {
+		Thread.sleep(6000);
+		}catch (Exception e) {
+		}
 		spark.stop();
 	
 
